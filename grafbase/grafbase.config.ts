@@ -1,4 +1,4 @@
-import { g, auth, config } from '@grafbase/sdk';
+import { g, auth, config, connector } from '@grafbase/sdk';
 
 // @ts-ignore
 const User = g

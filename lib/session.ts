@@ -48,6 +48,7 @@ export const authOptions: NextAuthOptions = {
          const email = session?.user?.email as string;
 
          try {
+            // @ts-ignore
             const data = (await getUser(email)) as { user?: UserProfile };
 
             const newSession = {
@@ -69,6 +70,7 @@ export const authOptions: NextAuthOptions = {
       async signIn({ user }: { user: AdapterUser | User }) {
          try {
             // get the user if they exist
+            // @ts-ignore
             const userExists = (await getUser(user?.email as string)) as {
                user?: UserProfile;
             };

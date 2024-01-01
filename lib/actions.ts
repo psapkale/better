@@ -12,9 +12,8 @@ import {
 import { GraphQLClient } from 'graphql-request';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const apiUrl = isProduction
-   ? process.env.NEXT_PUBLIC_GRAFBASE_API_URL || ''
-   : 'http://127.0.0.1:4000/graphql';
+const apiUrl = process.env.NEXT_PUBLIC_GRAFBASE_API_URL || '';
+// : 'http://127.0.0.1:4000/graphql';
 const apiKey = isProduction
    ? process.env.NEXT_PUBLIC_GRAFBASE_API_KEY || ''
    : 'alksfdjaklsfdj';
@@ -24,12 +23,30 @@ const serverUrl = isProduction
 
 const client = new GraphQLClient(apiUrl);
 
-const makeGraphQLRequest = async (query: string, variables = {}) => {
-   try {
-      return await client.request(query, variables);
-   } catch (error) {
-      throw error;
-   }
+const makeGraphQLRequest = (query: string, variables = {}) => {
+   client
+      .request(query, variables)
+      .then((response) => {
+         // @ts-ignore
+         if (response.errors) {
+            // @ts-ignore
+            console.error('GraphQL Errors:', response.errors);
+            throw new Error('GraphQL request returned errors');
+         }
+
+         return response;
+      })
+      .catch((error) => {
+         console.error('GraphQL Request Error:', error);
+
+         if (error.response?.status === 503) {
+            console.error(
+               'Server temporarily unavailable. Please try again later.'
+            );
+         }
+
+         throw new Error('Failed to make GraphQL request');
+      });
 };
 
 export const getUser = (email: string) => {
@@ -50,13 +67,19 @@ export const createUser = (name: string, email: string, avatarUrl: string) => {
    return makeGraphQLRequest(createUserMutation, variables);
 };
 
-export const fetchToken = async () => {
+const fetchToken = async () => {
    try {
       const response = await fetch(`${serverUrl}/api/auth/token`);
 
+      if (!response.ok) {
+         console.error('Fetch Token Error:', response.statusText);
+         throw new Error('Failed to fetch token');
+      }
+
       return response.json();
    } catch (error) {
-      throw error;
+      console.error('Fetch Token Error:', error);
+      throw new Error('Failed to fetch token');
    }
 };
 

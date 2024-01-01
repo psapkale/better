@@ -30,6 +30,7 @@ export const dynamicParams = true;
 export const revalidate = 0;
 
 const Home = async ({ searchParams: { category, endCursor } }: Props) => {
+   // @ts-ignore
    const data = (await fetchAllProjects(category, endCursor)) as ProjectSearch;
 
    const projectToDisplay = data?.projectSearch?.edges || [];
